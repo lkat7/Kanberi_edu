@@ -3,7 +3,7 @@ import BigCalendar from "@/components/BigCalendar";
 import FormModal from "@/components/FormModal";
 import Performance from "@/components/Performance";
 import { role } from "@/lib/data";
-import Image from "next/image"; 
+import Image from "next/image";
 import Link from "next/link";
 
 const SingleTeacherPage = () => {
@@ -38,7 +38,7 @@ const SingleTeacherPage = () => {
                 </div>
                 <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
                   <Image src="/date.png" alt="" width={14} height={14} />
-                  <span>January 2025</span>
+                  <span>Janvier 2025</span>
                 </div>
                 <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
                   <Image src="/mail.png" alt="" width={14} height={14} />
@@ -122,19 +122,34 @@ const SingleTeacherPage = () => {
         <div className="bg-white p-4 rounded-md">
           <h1 className="text-xl font-semibold">Raccourcis</h1>
           <div className="mt-4 flex gap-4 flex-wrap text-xs text-gray-500">
-            <Link className="p-3 rounded-md bg-lamaSkyLight" href="/">
-              Classes de l'&apos;enseignant
+            <Link
+              className="p-3 rounded-md bg-lamaSkyLight"
+              href={`/list/classes?supervisorId=${"teacher2"}`}
+            >
+              Classes de l&apos;enseignant
             </Link>
-            <Link className="p-3 rounded-md bg-lamaPurpleLight" href="/">
+            <Link
+              className="p-3 rounded-md bg-lamaPurpleLight"
+              href={`/list/students?teacher=${"teacher2"}`}
+            >
               Élèves de l&apos;enseignant
             </Link>
-            <Link className="p-3 rounded-md bg-lamaYellowLight" href="/">
+            <Link
+              className="p-3 rounded-md bg-lamaYellowLight"
+              href={`/list/lessons?teacher=${"teacher2"}`}
+            >
               Leçons de l&apos;enseignant
             </Link>
-            <Link className="p-3 rounded-md bg-pink-50" href="/">
+            <Link
+              className="p-3 rounded-md bg-pink-50"
+              href={`/list/exams?teacher=${"teacher2"}`}
+            >
               Exams de l&apos;enseignant
             </Link>
-            <Link className="p-3 rounded-md bg-lamaSkyLight" href="/">
+            <Link
+              className="p-3 rounded-md bg-lamaSkyLight"
+              href={`/list/assignments?teacherId=${"teacher2"}`}
+            >
               Devoirs de l&apos;enseignant
             </Link>
           </div>

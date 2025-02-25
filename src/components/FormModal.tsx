@@ -41,7 +41,7 @@ const FormModal = ({
     | "announcement";
   type: "create" | "update" | "delete";
   data?: any;
-  id?: number;
+  id?: number | string;
 }) => {
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
@@ -66,6 +66,22 @@ const FormModal = ({
         return "ce parent";
       case "teacher":
         return "cet enseignant";
+        case "subject":
+        return "cette matière";
+        case "class":
+        return "cette classe";
+        case "lesson":
+        return "ce cours";
+        case "exam":
+        return "cet examen";
+        case "assignment":
+        return "ce devoir";
+        case "result":
+        return "cette note";
+        case "attendance":
+        return "cette présence";
+        case "event":
+        return "cet événement";
       default:
         return `ce (${table})`;
     }
