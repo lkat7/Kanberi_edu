@@ -1,39 +1,52 @@
+import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { lessonsData, role, subjectsData } from "@/lib/data";
-import Image from "next/image";
-import Link from "next/link";
-import FormModal from "@/components/FormModal";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Lesson, Prisma, Subject, Teacher, Class } from "@prisma/client";
+import { Class, Lesson, Prisma, Subject, Teacher } from "@prisma/client";
+import Image from "next/image";
+import { auth } from "@clerk/nextjs/server";
 
-type LessonList = Lesson & { subject: Subject } & { teacher: Teacher } & {
-  class: Class;
+type LessonList = Lesson & { subject: Subject } & { class: Class } & {
+  teacher: Teacher;
 };
+
+
+const LessonListPage = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) => {
+
+const { sessionClaims } = auth();
+const role = (sessionClaims?.metadata as { role?: string })?.role;
+
 
 const columns = [
   {
-    header: "Nom de la matière",
+    header: "Matière",
     accessor: "name",
   },
   {
     header: "Classe",
     accessor: "class",
   },
-
   {
     header: "Enseignant",
     accessor: "teacher",
     className: "hidden md:table-cell",
   },
-
-  {
-    header: "Actions",
-    accessor: "action",
-  },
+  ...(role === "admin"
+    ? [
+        {
+          header: "Actions",
+          accessor: "action",
+        },
+      ]
+    : []),
 ];
+
 const renderRow = (item: LessonList) => (
   <tr
     key={item.id}
@@ -41,7 +54,9 @@ const renderRow = (item: LessonList) => (
   >
     <td className="flex items-center gap-4 p-4">{item.subject.name}</td>
     <td>{item.class.name}</td>
-    <td className="hidden md:table-cell">{item.teacher.name + " " + item.teacher.surname}</td>
+    <td className="hidden md:table-cell">
+      {item.teacher.name + " " + item.teacher.surname}
+    </td>
     <td>
       <div className="flex items-center gap-2">
         {role === "admin" && (
@@ -54,14 +69,11 @@ const renderRow = (item: LessonList) => (
     </td>
   </tr>
 );
-const LessonListPage = async ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined };
-}) => {
+
   const { page, ...queryParams } = searchParams;
 
   const p = page ? parseInt(page) : 1;
+
   // URL PARAMS CONDITION
 
   const query: Prisma.LessonWhereInput = {};
@@ -74,7 +86,7 @@ const LessonListPage = async ({
             query.classId = parseInt(value);
             break;
           case "teacherId":
-            query.name = { contains: value, mode: "insensitive" };
+            query.teacherId = value;
             break;
           case "search":
             query.OR = [
@@ -98,7 +110,7 @@ const LessonListPage = async ({
         teacher: { select: { name: true, surname: true } },
       },
       take: ITEM_PER_PAGE,
-      skip: (p - 1) * ITEM_PER_PAGE,
+      skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.lesson.count({ where: query }),
   ]);
@@ -107,9 +119,7 @@ const LessonListPage = async ({
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="hidden md:block text-lg font-semibold">
-          Toutes les leçons
-        </h1>
+        <h1 className="hidden md:block text-lg font-semibold">Tous les cours</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
