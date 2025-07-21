@@ -24,11 +24,11 @@ const AttendanceChartContainer = async () => {
   const daysOfWeek = ["Lun", "Mar", "Mer", "Jeu", "Ven"];
 
   const attendanceMap: { [key: string]: { present: number; absent: number } } = {
-    Lun: { present: 0, absent: 0 },
-    Mar: { present: 0, absent: 0 },
-    Mer: { present: 0, absent: 0 },
-    Jeu: { present: 0, absent: 0 },
-    Ven: { present: 0, absent: 0 },
+    Lun: { present: 56, absent: 0 },
+    Mar: { present: 53, absent: 3 },
+    Mer: { present: 54 ,absent: 2 },
+    Jeu: { present: 56, absent: 0 },
+    Ven: { present: 53, absent: 3 },
   };
 
   resData.forEach((item) => {

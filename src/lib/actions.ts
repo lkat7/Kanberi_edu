@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ClassSchema, ExamSchema, StudentSchema, SubjectSchema, TeacherSchema } from "./formValidationSchemas";
+import { ClassSchema, ExamSchema, StudentSchema, SubjectSchema, TeacherSchema, ParentSchema } from "./formValidationSchemas";
 import prisma from "./prisma";
 import { clerkClient } from "@clerk/nextjs/server";
 
@@ -237,6 +237,27 @@ export const deleteTeacher = async (
     return { success: false, error: true };
   }
 };
+export const deleteParent = async (
+  currentState: CurrentState,
+  data: FormData
+) => {
+  const id = data.get("id") as string;
+  try {
+    await clerkClient.users.deleteUser(id);
+
+    await prisma.parent.delete({
+      where: {
+        id: id,
+      },
+    });
+
+    // revalidatePath("/list/teachers");
+    return { success: true, error: false };
+  } catch (err) {
+    console.log(err);
+    return { success: false, error: true };
+  }
+};
 
 export const createStudent = async (
   currentState: CurrentState,
@@ -450,6 +471,94 @@ export const deleteExam = async (
     });
 
     // revalidatePath("/list/subjects");
+    return { success: true, error: false };
+  } catch (err) {
+    console.log(err);
+    return { success: false, error: true };
+  }
+};
+
+export const createParent = async (
+  currentState: CurrentState,
+  data: ParentSchema
+) => {
+  try {
+    const { username, password, name, surname, email, phone, address, children } = data as any;
+
+    // Création du compte Clerk
+    const user = await clerkClient.users.createUser({
+      username,
+      password,
+      firstName: name,
+      lastName: surname,
+      publicMetadata: { role: "parent" },
+      ...(email ? { emailAddress: [email] } : {}),
+      ...(phone?.startsWith("+") ? { phoneNumber: phone } : {}),
+    });
+
+    // Création du parent dans la base de données
+    await prisma.parent.create({
+      data: {
+        id: user.id,
+        username,
+        name,
+        surname,
+        email: email || undefined,
+        phone: phone || undefined,
+        address,
+        students: {
+          connect: Array.isArray(children)
+            ? children.map((studentId: string) => ({ id: studentId }))
+            : [],
+        },
+      },
+    });
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.log("Erreur Clerk (createParent):", err);
+    return { success: false, error: true };
+  }
+};
+
+
+export const updateParent = async (
+  currentState: CurrentState,
+  data: ParentSchema
+) => {
+  if (!data.id) {
+    return { success: false, error: true };
+  }
+  try {
+    const { id, username, password, name, surname, email, phone, address, children } = data as any;
+    // Mettre à jour l'utilisateur parent dans Clerk
+    await clerkClient.users.updateUser(id, {
+      username,
+      ...(password && password !== "" && { password }),
+      firstName: name,
+      lastName: surname,
+      emailAddress: email || undefined,
+      phoneNumber: phone || undefined,
+    });
+
+    // Mettre à jour le parent dans la base de données
+    await prisma.parent.update({
+      where: {
+        id,
+      },
+      data: {
+        username,
+        name,
+        surname,
+        email: email || undefined,
+        phone: phone || undefined,
+        address,
+        students: {
+          set: Array.isArray(children) ? children.map((studentId: string) => ({ id: studentId })) : [],
+        },
+      },
+    });
+    // revalidatePath("/list/parents");
     return { success: true, error: false };
   } catch (err) {
     console.log(err);
